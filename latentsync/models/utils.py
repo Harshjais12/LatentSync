@@ -17,3 +17,20 @@ def zero_module(module):
     for p in module.parameters():
         p.detach().zero_()
     return module
+
+import cv2
+import torch
+import numpy as np
+from gfpgan import GFPGANer
+from codeformer import CodeFormer
+
+def apply_super_resolution(subframe, method="GFPGAN"):
+    if method == "GFPGAN":
+        gfpgan = GFPGANer(model_path="checkpoints/GFPGAN.pth")
+        _, restored_img, _ = gfpgan.enhance(subframe, has_aligned=False, only_center_face=False, paste_back=True)
+        return restored_img
+    elif method == "CodeFormer":
+        codeformer = CodeFormer(model_path="checkpoints/CodeFormer.pth")
+        restored_img = codeformer.enhance(subframe)
+        return restored_img
+    return subframe  

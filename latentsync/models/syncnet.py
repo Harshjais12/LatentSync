@@ -24,6 +24,22 @@ import torch.nn.functional as F
 from diffusers.models.attention import CrossAttention, FeedForward
 from diffusers.utils.import_utils import is_xformers_available
 from einops import rearrange
+from utils import apply_super_resolution
+
+def process_frame(input_frame, output_subframe, position, superres_method=None):
+    input_h, input_w = input_frame.shape[:2]
+    out_h, out_w = output_subframe.shape[:2]
+
+    resolution_ratio = (input_w / out_w, input_h / out_h)
+
+
+    if resolution_ratio[0] > 1.0 or resolution_ratio[1] > 1.0:
+        if superres_method:
+            output_subframe = apply_super_resolution(output_subframe, superres_method)
+
+    input_frame[position[1]:position[1] + out_h, position[0]:position[0] + out_w] = output_subframe
+    return input_frame
+
 
 
 class SyncNet(nn.Module):
